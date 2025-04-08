@@ -1,7 +1,7 @@
 import News from "./admin/News";
 import Login from "./admin/Login";
 import Course from "./admin/Course";
-import LayoutPage from "./admin/layout";
+import LayoutPage from "./admin/Layout";
 import React, { useEffect, useState } from "react";
 import Statistics from "./admin/Statistics";
 import FaqSection from "./admin/FaqSection";
