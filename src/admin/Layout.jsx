@@ -16,7 +16,7 @@ const router = [
   {
     id: "3",
     name: "Курс",
-    path: "/course",
+    path: "/courses",
   },
   {
     id: "4",
@@ -27,48 +27,51 @@ const router = [
 
 export default function LayoutPage() {
   return (
-    <>
-      <div>
-        <div className="h-[132px] bg-white flex items-center justify-between px-20 shadow-md relative">
-          <img src={AdminLogo} alt="" />
-          <select name="" id="">
-            <option value="">Uz</option>
-            <option value="">En</option>
-            <option value="">Ru</option>
-          </select>
-        </div>
-        <div className="flex min-h-auto">
-          <div className="max-w-[250px] w-full flex flex-col gap-3 p-4 pt-6 bg-white shadow-lg rounded-lg">
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="h-[100px] bg-white flex items-center justify-between px-20 shadow-md">
+        <img src={AdminLogo} alt="Admin Logo" />
+        <select>
+          <option value="">Uz</option>
+          <option value="">En</option>
+          <option value="">Ru</option>
+        </select>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex flex-1">
+        {/* Sidebar - Sticky qilish uchun ota divga height berish kerak */}
+        <div className="w-[250px] flex-shrink-0 bg-white p-4">
+          <div className="sticky top-4 flex flex-col gap-3">
             {router.map((item) => (
               <NavLink
                 key={item.id}
                 to={`/admin${item.path}`}
                 end
                 className={({ isActive }) =>
-                  `text-[#222222] text-lg font-medium px-4 py-3 border-[1px] border-[#FFE9EB] rounded-[6px] transition-all duration-300 ${
+                  `text-[#222222] text-lg font-medium px-4 py-3 border border-[#FFE9EB] rounded-[6px] transition-all duration-300 ${
                     isActive
                       ? "bg-[#FFE9EB] text-[#A11E29]"
                       : "hover:bg-[#FFE9EB]"
-                  }`
+                  } shadow-sm`
                 }
                 style={{
                   display: "block",
                   textDecoration: "none",
-                  boxShadow: "2px 2px 10px rgba(0,0,0,0.1)",
                 }}
               >
                 {item.name}
               </NavLink>
             ))}
           </div>
-
-          <div className="bg-[#F7F8FD] w-full p-5">
-            <div className="border border-[#FAEAEB] rounded-[12px] h-full">
-              <Outlet />
-            </div>
-          </div>
         </div>
+
+        <main className="flex-1 bg-[#F7F8FD] p-5">
+          <div className="border border-[#FAEAEB] rounded-[12px] bg-white min-h-full p-6">
+            <Outlet />
+          </div>
+        </main>
       </div>
-    </>
+    </div>
   );
 }

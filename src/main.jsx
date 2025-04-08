@@ -2,16 +2,14 @@ import "./index.css";
 import App from "./App.jsx";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import Lenis from "@studio-freight/lenis"; // ✅ To‘g‘ri import
+import axios from "axios";
 
-const lenis = new Lenis();
+axios.defaults.baseURL = "http://localhost:2222"
+let token = localStorage.getItem("accessToken");
 
-function raf(time) {
-  lenis.raf(time);
-  requestAnimationFrame(raf);
+if (token) {
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 }
-
-requestAnimationFrame(raf);
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>

@@ -6,10 +6,11 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Img from "../assets/jam_picture.png";
 import { Button, DatePicker, Form, Input } from "antd";
 import styled from "styled-components";
+import axios from "axios";
 
 const { TextArea } = Input;
 
@@ -42,7 +43,7 @@ const StyledInput = styled(Input)`
   }
 `;
 const StyledTextArea = styled(TextArea)`
-  border: 1px solid #d9d9d9 !important; 
+  border: 1px solid #d9d9d9 !important;
   box-shadow: none !important;
   padding: 12px 20px !important;
   font-size: 15px;
@@ -52,7 +53,7 @@ const StyledTextArea = styled(TextArea)`
     color: #737373;
   }
   &:focus {
-    border: 1px solid #d9d9d9 !important; 
+    border: 1px solid #d9d9d9 !important;
     box-shadow: none !important;
   }
 
@@ -73,37 +74,51 @@ const StyledTextAreaWithPrefix = ({ prefix, ...props }) => {
   );
 };
 
-const data = [
-  {
-    id: 1,
-    question: "Кому подойдут ваши курсы?",
-    answer:
-      "Наши курсы подойдут новичкам, которые хотят разобраться в основах кибербезопасности, а также специалистам, стремящимся повысить свою квалификацию.",
-  },
-  {
-    id: 2,
-    question: "Кому подойдут ваши курсы?",
-    answer:
-      "Наши курсы подойдут новичкам, которые хотят разобраться в основах кибербезопасности, а также специалистам, стремящимся повысить свою квалификацию.",
-  },
-];
-
 export default function FaqSection() {
-  const [dataId, setDataId] = useState(null);
   const [form] = Form.useForm();
+  const [data, setData] = useState([]);
+  const [dataId, setDataId] = useState(null);
 
-  const onFinish = (values) => {
-    console.log("Kiritilgan qiymatlar:", values);
+  const onFinish = async (values) => {
+    try {
+      console.log("Kiritilgan qiymatlar:", values);
+      let { data } = await axios.post("/questions/create", {
+        question_uz: values.description.uzb,
+        question_ru: values.description.ryc,
+        question_eng: values.description.eng,
+        answer_uz: values.title.uzb,
+        answer_ru: values.title.ryc,
+        answer_eng: values.title.eng,
+      });
+
+      if (data.status === 201) {
+        form.resetFields();
+        fetchQuestions();
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
+  async function fetchQuestions() {
+    try {
+      let { data } = await axios.get("/questions/all?page=1&&limit=20");
+      setData(data.questions);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  function cancelForm() {
+    form.resetFields();
+  }
+
   return (
-    <div className="p-5 bg-white">
-      <button className="cursor-pointer">
-        <ArrowLeft color="#737373" size={30} />
-      </button>
-      <button className="mt-6 py-[10px] px-10 text-[#3F73BC] flex items-center gap-5 cursor-pointer rounded-[8px] border border-[#CDE2FF]">
-        <span>Добавить</span>
-        <Plus size={15} />
-      </button>
+    <div className="px-5 bg-white">
       <div className="mt-10">
         <div className="flex flex-col gap-2 mb-5">
           {data.map((item) => (
@@ -115,12 +130,12 @@ export default function FaqSection() {
                 >
                   <p className="text-[#222222] text-xl font-medium flex items-center">
                     <Dot />
-                    {" " + item.question}
+                    {" " + item.question_uz}
                   </p>
                   {dataId === item.id ? <ChevronUp /> : <ChevronDown />}
                 </div>
                 {dataId === item.id && (
-                  <p className="pt-4 text-[#737373]">{item.answer}</p>
+                  <p className="pt-4 text-[#737373]">{item.answer_uz}</p>
                 )}
               </div>
               <div className="w-[84px] h-[54px] border border-[#D9D9D9] flex items-center justify-center rounded-[8px]">
@@ -142,6 +157,7 @@ export default function FaqSection() {
             className="!mb-0"
             name={["title", "ryc"]}
             rules={[{ required: true, message: "" }]}
+            label="Вопрос"
           >
             <StyledInput
               size="large"
@@ -236,7 +252,7 @@ export default function FaqSection() {
 
           {/* Submit Button */}
           <Form.Item className="flex justify-end">
-            <button className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer">
+            <button className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer" onClick={() => cancelForm()}>
               Oтменить
             </button>
             <button
