@@ -182,7 +182,7 @@ export default function News() {
                 className="w-[326px] flex justify-end items-start cursor-pointer h-[200px] bg-[#F7F8FD] mb-2 rounded"
               >
                 <img
-                  src={`http://localhost:2222${e.image}`}
+                  src={`https://www.isouzbekistan.uz/api${e.image}`}
                   alt=""
                   className="h-full bg-cover rounded"
                 />
