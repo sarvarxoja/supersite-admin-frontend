@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "https://www.isouzbekistan.uz/api/";
+// https://www.isouzbekistan.uz/api/ 
+const API_URL = "http://localhost:2222/api";
 axios.defaults.withCredentials = true;
 
 const $axios = axios.create({

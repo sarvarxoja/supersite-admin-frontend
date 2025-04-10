@@ -1,30 +1,43 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Img from "../assets/logo.png";
 import { Button, Checkbox, Form, Input } from "antd";
 import { useNavigate } from "react-router-dom";
 import { $axios } from "../http";
+import axios from "axios";
 export default function Login({ access }) {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [load, setLoad] = useState(false);
 
   useEffect(() => {
     if (access) {
-      navigate("/admin/");
+      navigate("/ru/admin/");
     }
   }, [access]);
 
   const onFinish = async (values) => {
+    setLoad(true);
+    if (load === true) {
+      return;
+    }
+
     try {
-      const { data } = await $axios.post("/auth/login", {
+      const { data } = await axios.post("/auth/login", {
         login: values.login,
         password: values.password,
       });
 
+      console.log(data);
+
       if (data.status === 200) {
         localStorage.setItem("accessToken", data.accessToken);
-        navigate("/admin/");
+        navigate("/ru/admin/");
+        window.location.reload();
       }
     } catch (error) {
-      console.log(error);
+      setError(error.response.data.msg);
+    } finally {
+      setLoad(false);
     }
   };
 
@@ -49,22 +62,21 @@ export default function Login({ access }) {
           >
             <Input />
           </Form.Item>
-
-          <Form.Item
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: "Please input your password!" }]}
-          >
-            <Input.Password />
-          </Form.Item>
-
-          <Form.Item name="remember" valuePropName="checked" label={null}>
-            <Checkbox>Remember me</Checkbox>
-          </Form.Item>
-
+          <div className="mt-4">
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[
+                { required: true, message: "Please input your password!" },
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
+          </div>
+          <span className="text-red-600 mt-4 block">{error}</span>
           <Form.Item label={null}>
-            <Button type="primary" htmlType="submit">
-              Submit
+            <Button type="primary" htmlType="submit" className="mt-4">
+              {load === false ? "Submit" : "Loading..."}
             </Button>
           </Form.Item>
         </Form>

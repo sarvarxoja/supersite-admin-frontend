@@ -4,7 +4,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import axios from "axios";
 
-axios.defaults.baseURL = "https://www.isouzbekistan.uz/api/"
+// https://www.isouzbekistan.uz/api
+axios.defaults.baseURL = "http://localhost:2222/api"
 let token = localStorage.getItem("accessToken");
 
 if (token) {

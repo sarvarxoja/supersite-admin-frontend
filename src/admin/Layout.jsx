@@ -1,41 +1,62 @@
-import React from "react";
+import React, { useEffect } from "react";
 import AdminLogo from "../assets/admin-logo.png";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const router = [
   {
     id: "1",
-    name: "Общая статистика",
+    name: "general_statistics",
     path: "/",
   },
   {
     id: "2",
-    name: "Новости",
+    name: "news",
     path: "/news",
   },
   {
     id: "3",
-    name: "Курс",
+    name: "courses",
     path: "/courses",
   },
   {
     id: "4",
-    name: "Часто задаваемые вопросы",
+    name: "frequently_asked_questions",
     path: "/faq-section",
   },
 ];
 
 export default function LayoutPage() {
+  const { lang } = useParams();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { i18n } = useTranslation();
+
+  const changeLanguage = (event) => {
+    const newLang = event.target.value;
+    const currentPath = location.pathname;
+    const pathWithoutLang = currentPath.replace(/^\/(uz|en|ru)/, ''); // eski lang-ni olib tashlaymiz
+    const newPath = `/${newLang}${pathWithoutLang}`; // yangi lang bilan yo'lni yasaymiz
+  
+    i18n.changeLanguage(newLang); // Tilni o'zgartiramiz
+    navigate(newPath); // Hozirgi sahifada qolgan holda lang-ni almashtiramiz
+  };
+
+  useEffect(() => {
+    if (lang) {
+      i18n.changeLanguage(lang); // URL dan tilni o'zgartiramiz
+    }
+  }, [lang, i18n]);
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="h-[100px] bg-white flex items-center justify-between px-20 shadow-md">
         <img src={AdminLogo} alt="Admin Logo" />
-        <select>
-          <option value="">Uz</option>
-          <option value="">En</option>
-          <option value="">Ru</option>
-        </select>
+        <select onChange={changeLanguage}>
+        <option value="en" selected={lang === 'en'}>English</option>
+        <option value="ru" selected={lang === 'ru'}>Русский</option>
+        <option value="uz" selected={lang === 'uz'}>Uzbek</option>
+      </select>
       </header>
 
       {/* Main Content */}
@@ -46,7 +67,7 @@ export default function LayoutPage() {
             {router.map((item) => (
               <NavLink
                 key={item.id}
-                to={`/admin${item.path}`}
+                to={`/${lang}/admin${item.path}`}
                 end
                 className={({ isActive }) =>
                   `text-[#222222] text-lg font-medium px-4 py-3 border border-[#FFE9EB] rounded-[6px] transition-all duration-300 ${
@@ -60,7 +81,7 @@ export default function LayoutPage() {
                   textDecoration: "none",
                 }}
               >
-                {item.name}
+                {t(item.name)}
               </NavLink>
             ))}
           </div>

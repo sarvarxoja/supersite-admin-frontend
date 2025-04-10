@@ -3,21 +3,27 @@ import React, { useEffect, useState } from "react";
 import $api from "../http/api";
 import { format } from "date-fns";
 import { Pagination, Spin } from "antd";
+import DeleteConfirmationModal from "../components/DeleteModal";
+import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 export default function Statistics() {
   const [lids, setLids] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [filterName, setFilterName] = useState("today");
-  const [expandedItemId, setExpandedItemId] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [isOpen, setIsOpen] = useState(false);
   const [pageSize, setPageSize] = useState(9);
+  const [loading, setLoading] = useState(false);
   const [totalLids, setTotalLids] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [deleteLoad, setDeleteLoad] = useState(false);
+  const [selectedData, setSelectedData] = useState("");
+  const [filterName, setFilterName] = useState("today");
+  const { t } = useTranslation();
 
   const dailyRequests = [
-    { id: 1, name: "Заявок за день", filter: "today" },
-    { id: 2, name: "Заявок за неделю", filter: "week" },
-    { id: 3, name: "Заявок за месяц", filter: "month" },
-    { id: 4, name: "Все заявки", filter: "all" },
+    { id: 1, name: "applications_per_day", filter: "today" },
+    { id: 2, name: "applications_per_week", filter: "week" },
+    { id: 3, name: "applications_per_month", filter: "month" },
+    { id: 4, name: "applications_all", filter: "all" },
   ];
 
   const getLids = async () => {
@@ -42,9 +48,32 @@ export default function Statistics() {
     }
   };
 
+  function openAndClose(id) {
+    setSelectedData(id);
+    setIsOpen(!isOpen);
+  }
+
   useEffect(() => {
     getLids();
   }, [filterName, currentPage, pageSize]);
+
+  async function handleDelete() {
+    setDeleteLoad(true);
+
+    if (deleteLoad === true) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/lids/${selectedData}`);
+      openAndClose();
+      getLids();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setDeleteLoad(false);
+    }
+  }
 
   return (
     <div className="p-10 flex items-start gap-6 bg-white min-h-screen">
@@ -63,7 +92,7 @@ export default function Statistics() {
                 : "text-[#737373] hover:text-[#3F73BC]"
             }`}
           >
-            {item.name}
+            {t(item.name)}
           </div>
         ))}
       </div>
@@ -83,7 +112,7 @@ export default function Statistics() {
           </div>
         ) : lids.length === 0 ? (
           <div className="text-[#737373] text-xl text-center py-10">
-            Нет данных по выбранному фильтру
+            {t("notfound_applications")}
           </div>
         ) : (
           <>
@@ -102,25 +131,28 @@ export default function Statistics() {
                     {item.phone_number}
                   </p>
                   <p className="text-[#222222] text-sm font-medium pt-2">
-                    {format(new Date(item.createdAt), "dd/MM/yyyy")} от{" "}
-                    {item.from_time} до {item.to_time}
+                    {format(new Date(item.createdAt), "dd/MM/yyyy")} {t("from")}{" "}
+                    {item.from_time} {t("to")} {item.to_time}
                   </p>
 
                   <div className="absolute right-4 top-[34px]">
-                    <button className="cursor-pointer w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-50">
+                    <button
+                      onClick={() => openAndClose(item.id)}
+                      className="cursor-pointer w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
+                    >
                       <Trash2 color="#EE2E24" />
                     </button>
                   </div>
 
                   <div>
                     <p className="pt-[15px] text-[#737373] text-[13px] font-medium">
-                      Направление курса
+                      {t("course_direction")}
                     </p>
                     <p className="text-[#222222] text-base font-medium">
                       {item.course_name}
                     </p>
                     <p className="text-base text-[#737373] font-medium pt-[5px]">
-                      Коментарии
+                      {t("comment")}
                     </p>
                     <p className="text-base text-[#737373] pt-[5px] line-clamp-4 overflow-hidden">
                       {item.comment || "Нет комментариев"}
@@ -149,6 +181,11 @@ export default function Statistics() {
           </>
         )}
       </div>
+      <DeleteConfirmationModal
+        isOpen={isOpen}
+        handleDelete={handleDelete}
+        closeModal={openAndClose}
+      />
     </div>
   );
 }

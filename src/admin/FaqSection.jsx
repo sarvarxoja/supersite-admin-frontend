@@ -11,6 +11,8 @@ import Img from "../assets/jam_picture.png";
 import { Button, DatePicker, Form, Input } from "antd";
 import styled from "styled-components";
 import axios from "axios";
+import DeleteConfirmationModal from "../components/DeleteModal";
+import { useTranslation } from "react-i18next";
 
 const { TextArea } = Input;
 
@@ -77,11 +79,27 @@ const StyledTextAreaWithPrefix = ({ prefix, ...props }) => {
 export default function FaqSection() {
   const [form] = Form.useForm();
   const [data, setData] = useState([]);
+  const [load, setLoad] = useState(false);
+  const [deleteLoad, setDeleteLoad] = useState(false);
   const [dataId, setDataId] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedData, setSelectedData] = useState("");
+
+  const { t } = useTranslation();
+
+  function openAndClose(id) {
+    setSelectedData(id);
+    setIsOpen(!isOpen);
+  }
 
   const onFinish = async (values) => {
+    setLoad(true);
+
+    if (load === true) {
+      return;
+    }
+
     try {
-      console.log("Kiritilgan qiymatlar:", values);
       let { data } = await axios.post("/questions/create", {
         question_uz: values.description.uzb,
         question_ru: values.description.ryc,
@@ -97,6 +115,8 @@ export default function FaqSection() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoad(false);
     }
   };
 
@@ -115,6 +135,24 @@ export default function FaqSection() {
 
   function cancelForm() {
     form.resetFields();
+  }
+
+  async function handleDelete() {
+    setDeleteLoad(true);
+
+    if (deleteLoad === true) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/questions/${selectedData}`);
+      openAndClose();
+      fetchQuestions();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setDeleteLoad(false);
+    }
   }
 
   return (
@@ -138,9 +176,12 @@ export default function FaqSection() {
                   <p className="pt-4 text-[#737373]">{item.answer_uz}</p>
                 )}
               </div>
-              <div className="w-[84px] h-[54px] border border-[#D9D9D9] flex items-center justify-center rounded-[8px]">
+              <buttom
+                onClick={() => openAndClose(item.id)}
+                className="cursor-pointer w-[84px] h-[54px] border border-[#D9D9D9] flex items-center justify-center rounded-[8px]"
+              >
                 <Trash2 color="red" />
-              </div>
+              </buttom>
             </div>
           ))}
         </div>
@@ -157,14 +198,14 @@ export default function FaqSection() {
             className="!mb-0"
             name={["title", "ryc"]}
             rules={[{ required: true, message: "" }]}
-            label="Вопрос"
+            label={<span>{t("question")}</span>}
           >
             <StyledInput
               size="large"
-              placeholder="Dars nomi"
+              placeholder="Кому подойдут ваши курсы?"
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] mr-2 bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
-                  Ryc
+                  Рус
                 </span>
               }
             />
@@ -178,7 +219,7 @@ export default function FaqSection() {
           >
             <StyledInput
               size="large"
-              placeholder="Dars nomi"
+              placeholder="Kurslaringiz kimlarga mos keladi?"
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] mr-2 bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                   Uzb
@@ -195,7 +236,7 @@ export default function FaqSection() {
           >
             <StyledInput
               size="large"
-              placeholder="Dars nomi"
+              placeholder="Who are your courses suitable for?"
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] mr-2 bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                   Eng
@@ -207,7 +248,7 @@ export default function FaqSection() {
           {/* Ryc */}
           <Form.Item
             name={["description", "ryc"]}
-            label="Ответ"
+            label={<span>{t("answer")}</span>}
             rules={[{ required: true, message: "" }]}
           >
             <StyledTextAreaWithPrefix
@@ -215,7 +256,7 @@ export default function FaqSection() {
               placeholder="Наши курсы подойдут новичкам, которые хотят разобраться в основах кибербезопасности, а также специалистам, стремящимся повысить свою квалификацию."
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
-                  Ryc
+                  Рус
                 </span>
               }
             />
@@ -252,18 +293,26 @@ export default function FaqSection() {
 
           {/* Submit Button */}
           <Form.Item className="flex justify-end">
-            <button className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer" onClick={() => cancelForm()}>
+            <button
+              className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer"
+              onClick={() => cancelForm()}
+            >
               Oтменить
             </button>
             <button
               className="text-lg font-medium py-[10px] px-10 bg-[#3F73BC] rounded-[8px] text-white cursor-pointer"
               htmlType="submit"
             >
-              Coхранить
+              {setLoad === false ? "Loading..." : "Coхранить"}
             </button>
           </Form.Item>
         </Form>
       </div>
+      <DeleteConfirmationModal
+        isOpen={isOpen}
+        handleDelete={handleDelete}
+        closeModal={openAndClose}
+      />
     </div>
   );
 }

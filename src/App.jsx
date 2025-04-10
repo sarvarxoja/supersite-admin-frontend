@@ -8,6 +8,7 @@ import FaqSection from "./admin/FaqSection";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DefaultPage } from "./admin/Default";
+import NotFoundPage from "./admin/NotFound";
 
 export default function App() {
   const [access, setAccess] = useState(null);
@@ -37,14 +38,19 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<DefaultPage />} />
-      <Route path="/admin" element={<LayoutPage />}>
+
+      {/* Til parametrini yuqori darajada qo'shish */}
+      <Route path="/:lang/admin" element={<LayoutPage />}>
         <Route index element={<Statistics />} />
-        <Route path="/admin/news" element={<News />} />
-        <Route path="/admin/news/:id" element={<News />} />
-        <Route path="/admin/courses" element={<Course />} />
-        <Route path="/admin/courses/:id" element={<Course />} />
-        <Route path="/admin/faq-section" element={<FaqSection />} />
+
+        {/* "/:lang/admin/news" yo'lining bolalari uchun tilni qo'shamiz */}
+        <Route path="news" element={<News />} />
+        <Route path="news/:id" element={<News />} />
+        <Route path="courses" element={<Course />} />
+        <Route path="courses/:id" element={<Course />} />
+        <Route path="faq-section" element={<FaqSection />} />
       </Route>
+      <Route path="/*" element={<NotFoundPage />} />
       <Route path="/admin/login" element={<Login access={access} />} />
     </Routes>
   );

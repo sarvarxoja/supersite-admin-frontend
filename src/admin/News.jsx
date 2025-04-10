@@ -4,8 +4,11 @@ import React, { useEffect, useState } from "react";
 import Img from "../assets/jam_picture.png";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { Button, DatePicker, Form, Input } from "antd";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { formatDateToUzbek } from "../utils/DateFormatter";
+import DeleteConfirmationModal from "../components/DeleteModal";
+import { LanguageWrapper } from "../translation/LanguageWrapper";
+import { useTranslation } from "react-i18next";
 
 const { TextArea } = Input;
 
@@ -91,12 +94,43 @@ const StyledDatePicker = styled(DatePicker)`
 
 export default function News() {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const [load, setLoad] = useState(false);
   const [courses, setCourses] = useState([]);
-  const [course, setCourse] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [course, setCourse] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const { lang } = useParams();
+  const { t } = useTranslation();
 
   const { id } = useParams();
+
+  function openAndClose() {
+    setIsOpen(!isOpen);
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+
+    if (deleting === true) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/news/${id}`);
+      openAndClose();
+      fetchNews();
+      navigate(`/${lang}/admin/news/`);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   useEffect(() => {
     fetchNews();
@@ -136,6 +170,13 @@ export default function News() {
 
   const onFinish = async (values) => {
     const formData = new FormData();
+
+    setLoad(true);
+
+    if (load === true) {
+      return;
+    }
+
     formData.append("news_title_uz", values.title.uzb);
     formData.append("news_title_ru", values.title.rus);
     formData.append("news_title_eng", values.title.eng);
@@ -147,7 +188,6 @@ export default function News() {
       formData.append("image", selectedImage);
     }
 
-    console.log(values)
     try {
       let { data } = await axios.post("/news/create", formData, {
         headers: {
@@ -157,19 +197,74 @@ export default function News() {
 
       if (data.status === 201) {
         form.resetFields();
+        fetchNews();
+        setPreviewImage(null);
+        setSelectedImage(null);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoad(false);
     }
   };
+
+  const [updatePreviewImage, setUpdatePreviewImage] = useState(null);
+  const [selectedUpdateImage, setSelectedUpdateImage] = useState(null);
+
+  async function handleUpdateImageChange(e) {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedUpdateImage(file);
+      setUpdatePreviewImage(URL.createObjectURL(file));
+    }
+  }
+
+  function cancelForm() {
+    form.resetFields();
+    setPreviewImage(null);
+    setSelectedImage(null);
+  }
+
+  async function handleUpdate() {
+    setUpdating(true);
+
+    if (updating === true) {
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+
+      for (const key in course) {
+        formData.append(key, course[key]);
+      }
+
+      if (selectedUpdateImage) {
+        formData.append("image", selectedUpdateImage); // "image" backendda .single("image")
+      }
+
+      await axios.patch(`/news/${course.id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      fetchNews();
+      fetchCourse();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setUpdating(false);
+    }
+  }
 
   return (
     <div className="p-5 bg-white">
       <Link
-        to={"/admin/news/create"}
+        to={`/${lang}/admin/news/create`}
         className="w-[190px] py-[10px] px-10 text-[#3F73BC] flex items-center gap-5 cursor-pointer rounded-[8px] border border-[#CDE2FF]"
       >
-        <span>Добавить</span>
+        <span>{t("add")}</span>
         <Plus size={15} />
       </Link>
       <div className="mt-10 flex gap-5">
@@ -178,11 +273,11 @@ export default function News() {
             return (
               <Link
                 key={index}
-                to={`/admin/news/${e.id}`}
+                to={`/${lang}/admin/news/${e.id}`}
                 className="w-[326px] flex justify-end items-start cursor-pointer h-[200px] bg-[#F7F8FD] mb-2 rounded"
               >
                 <img
-                  src={`https://www.isouzbekistan.uz/api${e.image}`}
+                  src={`http://localhost:2222${e.image}`}
                   alt=""
                   className="h-full bg-cover rounded"
                 />
@@ -206,7 +301,7 @@ export default function News() {
                 <div className="flex items-center gap-4">
                   <label className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-[#D9D9D9] rounded-lg hover:bg-[#f5f5f5] transition-colors duration-200">
                     <span className="text-[#3F73BC] font-medium">
-                      Rasm tanlash
+                      {t("select_image")}
                     </span>
                     <input
                       type="file"
@@ -233,7 +328,9 @@ export default function News() {
               <Form.Item
                 className="!mb-0"
                 label={
-                  <span className="font-medium text-[#13265C]">Заголовок</span>
+                  <span className="font-medium text-[#13265C]">
+                    {t("title")}
+                  </span>
                 }
                 name={["title", "rus"]}
                 rules={[{ required: true, message: "" }]}
@@ -241,19 +338,13 @@ export default function News() {
                 <div className="flex items-center gap-[6px]">
                   <StyledInput
                     size="large"
-                    placeholder="Dars nomi"
+                    // placeholder="Dars nomi"
                     prefix={
                       <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
-                        Ryc
+                        Рус
                       </span>
                     }
                   />
-                  {/* <button
-                  type="button"
-                  className="w-[53px] cursor-pointer h-[41px] flex items-center justify-center border border-[#D9D9D9] rounded-[8px]"
-                >
-                  <Trash2 color="red" />
-                </button> */}
                 </div>
               </Form.Item>
 
@@ -266,7 +357,7 @@ export default function News() {
                 <div className="flex items-center gap-[6px]">
                   <StyledInput
                     size="large"
-                    placeholder="Dars nomi"
+                    // placeholder="Dars nomi"
                     prefix={
                       <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                         Uzb
@@ -291,26 +382,22 @@ export default function News() {
                 <div className="flex items-center gap-[6px]">
                   <StyledInput
                     size="large"
-                    placeholder="Dars nomi"
+                    // placeholder="Dars nomi"
                     prefix={
                       <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                         Eng
                       </span>
                     }
                   />
-                  {/* <button
-                  type="button"
-                  className="w-[53px] cursor-pointer h-[41px] flex items-center justify-center border border-[#D9D9D9] rounded-[8px]"
-                >
-                  <Trash2 color="red" />
-                </button> */}
                 </div>
               </Form.Item>
 
               <Form.Item
                 className="!mb-0"
                 label={
-                  <span className="font-medium text-[#13265C]">Информация</span>
+                  <span className="font-medium text-[#13265C]">
+                    {t("information")}
+                  </span>
                 }
                 name={["description", "rus"]}
                 rules={[{ required: true, message: "" }]}
@@ -318,19 +405,13 @@ export default function News() {
                 <div className="flex items-center gap-[6px]">
                   <StyledTextArea
                     rows={3}
-                    placeholder="Узнайте, как повысить свою квалификацию в области ISO/IEC 27001, международного стандарта для систем управления информационной безопасностью (ISMS). Независимо от того, начинаете ли вы свой путь или продвигаетесь по карьерной лестнице, наши учебные курсы и сертификации ..."
+                    placeholder="Рус"
                     prefix={
                       <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
-                        Ryc
+                        Рус
                       </span>
                     }
                   />
-                  {/* <button
-                  type="button"
-                  className="w-[53px] cursor-pointer h-[41px] flex items-center justify-center border border-[#D9D9D9] rounded-[8px]"
-                >
-                  <Trash2 color="red" />
-                </button> */}
                 </div>
               </Form.Item>
 
@@ -343,19 +424,13 @@ export default function News() {
                 <div className="flex items-center gap-[6px]">
                   <StyledTextArea
                     rows={3}
-                    placeholder="Learn how to develop your skills in ISO/IEC 27001, the international standard for information security management systems (ISMS). Whether you are just starting out or advancing your career, our ISO/IEC 27001 training courses and certifications will give you the..."
+                    placeholder="Uzb"
                     prefix={
                       <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
-                        Ryc
+                        Uzb
                       </span>
                     }
                   />
-                  {/* <button
-                  type="button"
-                  className="w-[53px] cursor-pointer h-[41px] flex items-center justify-center border border-[#D9D9D9] rounded-[8px]"
-                >
-                  <Trash2 color="red" />
-                </button> */}
                 </div>
               </Form.Item>
               {/* Eng */}
@@ -367,51 +442,66 @@ export default function News() {
                 <div className="flex items-center gap-[6px]">
                   <StyledTextArea
                     rows={3}
-                    placeholder="Learn how to develop your skills in ISO/IEC 27001, the international standard for information security management systems (ISMS). Whether you are just starting out or advancing your career, our ISO/IEC 27001 training courses and certifications will give you the..."
+                    placeholder="Eng"
                     prefix={
                       <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
-                        Ryc
+                        Eng
                       </span>
                     }
                   />
-                  {/* <button
-                  type="button"
-                  className="w-[53px] cursor-pointer h-[41px] flex items-center justify-center border border-[#D9D9D9] rounded-[8px]"
-                >
-                  <Trash2 color="red" />
-                </button> */}
                 </div>
               </Form.Item>
-
-              {/* <Form.Item
-              name="lessonDate"
-              label={<span className="font-medium text-[#13265C]">Дата</span>}
-              rules={[
-                {
-                  required: true,
-                  message: "",
-                },
-              ]}
-            >
-              <StyledDatePicker placeholder="Дата" />
-            </Form.Item> */}
-
-              {/* Submit Button */}
               <Form.Item className="flex justify-end">
-                <button className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer">
-                  Oтменить
+                <button
+                  onClick={() => cancelForm()}
+                  className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer"
+                >
+                  {t("delete")}
                 </button>
                 <button
                   className="text-lg font-medium py-[10px] px-10 bg-[#3F73BC] rounded-[8px] text-white cursor-pointer"
                   htmlType="submit"
                 >
-                  Coхранить
+                  {load === true ? "Loading..." : <span>{t("save")}</span>}
                 </button>
               </Form.Item>
             </Form>
           </div>
         ) : (
           <div className="border-l-2 pl-6 w-full border-[#D9D9D9] space-y-5">
+            <Form.Item>
+              <div className="flex items-center gap-4">
+                <label className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-[#D9D9D9] rounded-lg hover:bg-[#f5f5f5] transition-colors duration-200">
+                  <span className="text-[#3F73BC] font-medium">
+                    {t("select_image")}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUpdateImageChange}
+                    className="hidden"
+                    required
+                  />
+                </label>
+                <div className="w-[100px] h-[100px] relative">
+                  {updatePreviewImage === null ? (
+                    <img
+                      src={`http://localhost:2222${course.image}`}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded border border-[#D9D9D9]"
+                    />
+                  ) : (
+                    <div className="w-[100px] h-[100px] relative">
+                      <img
+                        src={updatePreviewImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded border border-[#D9D9D9]"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Form.Item>
             <div className="mb-6">
               <h1 className="text-lg font-medium mb-2">
                 {course.news_title_ru}
@@ -427,7 +517,7 @@ export default function News() {
 
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">
-                  Заголовок <span className="text-red-500">*</span>
+                  {t("title")} <span className="text-red-500">*</span>
                 </label>
 
                 <div className="mb-2">
@@ -442,6 +532,13 @@ export default function News() {
                         type="text"
                         className="w-full px-3 py-2 text-sm"
                         value={course.news_title_ru}
+                        onChange={(e) =>
+                          setCourse({
+                            ...course,
+                            news_title_ru: e.target.value,
+                          })
+                        }
+                        required
                       />
                     </div>
                   </div>
@@ -457,6 +554,13 @@ export default function News() {
                         type="text"
                         className="w-full px-3 py-2 text-sm"
                         value={course.news_title_uz}
+                        onChange={(e) =>
+                          setCourse({
+                            ...course,
+                            news_title_uz: e.target.value,
+                          })
+                        }
+                        required
                       />
                     </div>
                   </div>
@@ -472,6 +576,13 @@ export default function News() {
                         type="text"
                         className="w-full px-3 py-2 text-sm"
                         value={course.news_title_eng}
+                        onChange={(e) =>
+                          setCourse({
+                            ...course,
+                            news_title_eng: e.target.value,
+                          })
+                        }
+                        required
                       />
                     </div>
                   </div>
@@ -480,7 +591,7 @@ export default function News() {
 
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">
-                  Информация <span className="text-red-500">*</span>
+                  {t("information")} <span className="text-red-500">*</span>
                 </label>
 
                 <div className="mb-2">
@@ -495,6 +606,13 @@ export default function News() {
                         className="w-full px-3 py-2 text-sm"
                         rows="3"
                         value={course.news_about_ru}
+                        onChange={(e) =>
+                          setCourse({
+                            ...course,
+                            news_about_ru: e.target.value,
+                          })
+                        }
+                        required
                       />
                     </div>
                   </div>
@@ -510,6 +628,13 @@ export default function News() {
                         className="w-full px-3 py-2 text-sm"
                         rows="2"
                         value={course.news_about_uz}
+                        onChange={(e) =>
+                          setCourse({
+                            ...course,
+                            news_about_uz: e.target.value,
+                          })
+                        }
+                        required
                       />
                     </div>
                   </div>
@@ -525,12 +650,39 @@ export default function News() {
                         className="w-full px-3 py-2 text-sm"
                         rows="3"
                         value={course.news_about_eng}
+                        onChange={(e) =>
+                          setCourse({
+                            ...course,
+                            news_about_eng: e.target.value,
+                          })
+                        }
+                        required
                       />
                     </div>
                   </div>
                 </div>
               </div>
+              <Form.Item className="flex justify-end">
+                <button
+                  onClick={() => openAndClose()}
+                  className="text-lg font-medium py-[10px] px-10 bg-red-800 rounded-[8px] text-white cursor-pointer mr-4"
+                  htmlType="submit"
+                >
+                  {t("delete")}
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  className="text-lg font-medium py-[10px] px-10 bg-blue-600 rounded-[8px] text-white cursor-pointer"
+                >
+                  {updating === true ? "Loading..." : <span>{t("save")}</span>}
+                </button>
+              </Form.Item>
             </div>
+            <DeleteConfirmationModal
+              isOpen={isOpen}
+              handleDelete={handleDelete}
+              closeModal={openAndClose}
+            />
           </div>
         )}
       </div>
