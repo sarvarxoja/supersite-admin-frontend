@@ -311,7 +311,8 @@ export default function Course() {
                 className="w-[326px] flex justify-end items-start cursor-pointer h-[200px] bg-[#F7F8FD] mb-2 rounded"
               >
                 <img
-                  src={`http://localhost:2222${e.image}`}
+                  src={`https://www.isouzbekistan.uz/api${e.image}`}
+                  loading="lazy"
                   alt=""
                   className="h-full bg-cover rounded"
                 />
@@ -350,6 +351,7 @@ export default function Course() {
                     <div className="w-[100px] h-[100px] relative">
                       <img
                         src={previewImage}
+                        loading="lazy"
                         alt="Preview"
                         className="w-full h-full object-cover rounded border border-[#D9D9D9]"
                       />
@@ -785,7 +787,8 @@ export default function Course() {
                 <div className="w-[100px] h-[100px] relative">
                   {updatePreviewImage === null ? (
                     <img
-                      src={`http://localhost:2222${course.image}`}
+                      src={`https://www.isouzbekistan.uz/api${course.image}`}
+                      loading="lazy"
                       alt="Preview"
                       className="w-full h-full object-cover rounded border border-[#D9D9D9]"
                     />

@@ -13,6 +13,7 @@ import styled from "styled-components";
 import axios from "axios";
 import DeleteConfirmationModal from "../components/DeleteModal";
 import { useTranslation } from "react-i18next";
+import { useParams } from "react-router-dom";
 
 const { TextArea } = Input;
 
@@ -85,6 +86,7 @@ export default function FaqSection() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedData, setSelectedData] = useState("");
 
+  const { lang } = useParams();
   const { t } = useTranslation();
 
   function openAndClose(id) {
@@ -168,12 +170,22 @@ export default function FaqSection() {
                 >
                   <p className="text-[#222222] text-xl font-medium flex items-center">
                     <Dot />
-                    {" " + item.question_uz}
+                    {" " + lang === "en"
+                      ? item.question_eng
+                      : lang === "ru"
+                      ? item.question_ru
+                      : item.question_uz}
                   </p>
                   {dataId === item.id ? <ChevronUp /> : <ChevronDown />}
                 </div>
                 {dataId === item.id && (
-                  <p className="pt-4 text-[#737373]">{item.answer_uz}</p>
+                  <p className="pt-4 text-[#737373]">
+                    {lang === "en"
+                      ? item.answer_eng
+                      : lang === "ru"
+                      ? item.answer_ru
+                      : item.answer_uz}
+                  </p>
                 )}
               </div>
               <buttom

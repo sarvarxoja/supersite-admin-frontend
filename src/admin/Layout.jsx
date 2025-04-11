@@ -35,9 +35,9 @@ export default function LayoutPage() {
   const changeLanguage = (event) => {
     const newLang = event.target.value;
     const currentPath = location.pathname;
-    const pathWithoutLang = currentPath.replace(/^\/(uz|en|ru)/, ''); // eski lang-ni olib tashlaymiz
+    const pathWithoutLang = currentPath.replace(/^\/(uz|en|ru)/, ""); // eski lang-ni olib tashlaymiz
     const newPath = `/${newLang}${pathWithoutLang}`; // yangi lang bilan yo'lni yasaymiz
-  
+
     i18n.changeLanguage(newLang); // Tilni o'zgartiramiz
     navigate(newPath); // Hozirgi sahifada qolgan holda lang-ni almashtiramiz
   };
@@ -51,12 +51,18 @@ export default function LayoutPage() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="h-[100px] bg-white flex items-center justify-between px-20 shadow-md">
-        <img src={AdminLogo} alt="Admin Logo" />
+        <img src={AdminLogo} alt="Admin Logo" loading="lazy"/>
         <select onChange={changeLanguage}>
-        <option value="en" selected={lang === 'en'}>English</option>
-        <option value="ru" selected={lang === 'ru'}>Русский</option>
-        <option value="uz" selected={lang === 'uz'}>Uzbek</option>
-      </select>
+          <option value="en" selected={lang === "en"}>
+            English
+          </option>
+          <option value="ru" selected={lang === "ru"}>
+            Русский
+          </option>
+          <option value="uz" selected={lang === "uz"}>
+            Uzbek
+          </option>
+        </select>
       </header>
 
       {/* Main Content */}

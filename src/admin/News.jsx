@@ -277,7 +277,8 @@ export default function News() {
                 className="w-[326px] flex justify-end items-start cursor-pointer h-[200px] bg-[#F7F8FD] mb-2 rounded"
               >
                 <img
-                  src={`http://localhost:2222${e.image}`}
+                  src={`https://www.isouzbekistan.uz/api${e.image}`}
+                  loading="lazy"
                   alt=""
                   className="h-full bg-cover rounded"
                 />
@@ -486,7 +487,7 @@ export default function News() {
                 <div className="w-[100px] h-[100px] relative">
                   {updatePreviewImage === null ? (
                     <img
-                      src={`http://localhost:2222${course.image}`}
+                      src={`https://www.isouzbekistan.uz/api${course.image}`}
                       alt="Preview"
                       className="w-full h-full object-cover rounded border border-[#D9D9D9]"
                     />
