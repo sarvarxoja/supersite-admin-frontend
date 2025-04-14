@@ -25,5 +25,7 @@
   "delete": "Delete",
   "confirm_deletion": "Confirm deletion",
   "confirm_text": "Are you sure you want to delete this item?",
-  "delete_warn": "This action cannot be undone"
+  "delete_warn": "This action cannot be undone",
+  "update": "Update",
+  "number_visits": "Number of website visits"
 }

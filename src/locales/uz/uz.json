@@ -24,5 +24,7 @@
   "delete": "O'chirish",
   "confirm_deletion": "O'chirishni tasdiqlash",
   "confirm_text": "Siz rostdan ham bu elementni o'chirmoqchimisiz?",
-  "delete_warn": "Bu harakatni qaytarib bo'lmaydi."
+  "delete_warn": "Bu harakatni qaytarib bo'lmaydi.",
+  "update": "Yangilash",
+  "number_visits": "Saytga tashriflar soni"
 }

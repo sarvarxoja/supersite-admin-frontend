@@ -5,15 +5,16 @@ import {
   Dot,
   Plus,
   Trash2,
+  Pencil,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import Img from "../assets/jam_picture.png";
-import { Button, DatePicker, Form, Input } from "antd";
-import styled from "styled-components";
 import axios from "axios";
-import DeleteConfirmationModal from "../components/DeleteModal";
-import { useTranslation } from "react-i18next";
+import styled from "styled-components";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import React, { useEffect, useState } from "react";
+import { UpdateModal } from "../components/UpdateModal";
+import { Button, DatePicker, Form, Input } from "antd";
+import DeleteConfirmationModal from "../components/DeleteModal";
 
 const { TextArea } = Input;
 
@@ -103,12 +104,12 @@ export default function FaqSection() {
 
     try {
       let { data } = await axios.post("/questions/create", {
-        question_uz: values.description.uzb,
-        question_ru: values.description.ryc,
-        question_eng: values.description.eng,
-        answer_uz: values.title.uzb,
-        answer_ru: values.title.ryc,
-        answer_eng: values.title.eng,
+        question_uz: values.title.uzb,
+        question_ru: values.title.ryc,
+        question_eng: values.title.eng,
+        answer_uz: values.description.uzb,
+        answer_ru: values.description.ryc,
+        answer_eng: values.description.eng,
       });
 
       if (data.status === 201) {
@@ -157,6 +158,24 @@ export default function FaqSection() {
     }
   }
 
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedUpdateItem, setSelectedUpdateItem] = useState(null);
+
+  const handleUpdateOpenModal = (item) => {
+    setSelectedUpdateItem(item);
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleUpdate = async (updatedData) => {
+    try {
+      let { data } = await axios.patch(`/questions/${selectedUpdateItem.id}`, updatedData);
+      console.log(data)
+      fetchQuestions()
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="px-5 bg-white">
       <div className="mt-10">
@@ -194,6 +213,12 @@ export default function FaqSection() {
               >
                 <Trash2 color="red" />
               </buttom>
+              <button
+                onClick={() => handleUpdateOpenModal(item)}
+                className="cursor-pointer w-[84px] h-[54px] border border-[#D9D9D9] flex items-center justify-center rounded-[8px]"
+              >
+                <Pencil color="green" />
+              </button>
             </div>
           ))}
         </div>
@@ -214,7 +239,7 @@ export default function FaqSection() {
           >
             <StyledInput
               size="large"
-              placeholder="Кому подойдут ваши курсы?"
+              placeholder=""
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] mr-2 bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                   Рус
@@ -231,7 +256,7 @@ export default function FaqSection() {
           >
             <StyledInput
               size="large"
-              placeholder="Kurslaringiz kimlarga mos keladi?"
+              placeholder=""
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] mr-2 bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                   Uzb
@@ -248,7 +273,7 @@ export default function FaqSection() {
           >
             <StyledInput
               size="large"
-              placeholder="Who are your courses suitable for?"
+              placeholder=""
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] mr-2 bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                   Eng
@@ -265,7 +290,7 @@ export default function FaqSection() {
           >
             <StyledTextAreaWithPrefix
               rows={2}
-              placeholder="Наши курсы подойдут новичкам, которые хотят разобраться в основах кибербезопасности, а также специалистам, стремящимся повысить свою квалификацию."
+              placeholder=""
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                   Рус
@@ -280,7 +305,7 @@ export default function FaqSection() {
           >
             <StyledTextAreaWithPrefix
               rows={2}
-              placeholder="Bizning kurslarimiz kiberxavfsizlik asoslarini tushunmoqchi bo'lgan yangi boshlanuvchilar, shuningdek, o'z malakalarini oshirishga intilayotgan mutaxassislar uchun javob beradi."
+              placeholder=""
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                   Uzb
@@ -294,7 +319,7 @@ export default function FaqSection() {
           >
             <StyledTextAreaWithPrefix
               rows={2}
-              placeholder="Our courses are suitable for beginners who want to understand the basics of cybersecurity, as well as professionals who want to improve their skills. to improve their skills."
+              placeholder=""
               prefix={
                 <span className="flex items-center justify-center w-[33px] h-[33px] bg-[#EFF3FF] text-[#3F73BC] text-[12px] font-semibold rounded-full">
                   Eng
@@ -309,13 +334,14 @@ export default function FaqSection() {
               className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer"
               onClick={() => cancelForm()}
             >
-              Oтменить
+              {t("cancel")}
+              {/* Oтменить */}
             </button>
             <button
               className="text-lg font-medium py-[10px] px-10 bg-[#3F73BC] rounded-[8px] text-white cursor-pointer"
               htmlType="submit"
             >
-              {setLoad === false ? "Loading..." : "Coхранить"}
+              {t(`${setLoad === false ? "Loading..." : "save"}`)}
             </button>
           </Form.Item>
         </Form>
@@ -324,6 +350,12 @@ export default function FaqSection() {
         isOpen={isOpen}
         handleDelete={handleDelete}
         closeModal={openAndClose}
+      />
+      <UpdateModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        item={selectedUpdateItem}
+        onUpdate={handleUpdate}
       />
     </div>
   );

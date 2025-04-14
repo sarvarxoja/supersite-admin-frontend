@@ -757,13 +757,13 @@ export default function Course() {
                   onClick={() => cancelForm()}
                   className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer"
                 >
-                  Oтменить
+                  {t("cancel")}
                 </button>
                 <button
                   className="text-lg font-medium py-[10px] px-10 bg-[#3F73BC] rounded-[8px] text-white cursor-pointer"
                   htmlType="submit"
                 >
-                  {load === true ? "Loading..." : "Coхранить"}
+                   {t(`${setLoad === false ? "Loading..." : "save"}`)}
                 </button>
               </Form.Item>
             </Form>

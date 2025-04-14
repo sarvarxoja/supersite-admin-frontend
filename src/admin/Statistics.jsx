@@ -1,4 +1,4 @@
-import { ChevronDown, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import $api from "../http/api";
 import { format } from "date-fns";
@@ -13,6 +13,7 @@ export default function Statistics() {
   const [pageSize, setPageSize] = useState(9);
   const [loading, setLoading] = useState(false);
   const [totalLids, setTotalLids] = useState(0);
+  const [isSupOpen, setIsSupOpen] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteLoad, setDeleteLoad] = useState(false);
   const [selectedData, setSelectedData] = useState("");
@@ -75,6 +76,21 @@ export default function Statistics() {
     }
   }
 
+  const [visitNumber, setVisitNumber] = useState();
+
+  async function getVisitNumber() {
+    try {
+      let { data } = await axios.get("/requests/data");
+      setVisitNumber(data.data[0].count_request);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getVisitNumber();
+  }, []);
+
   return (
     <div className="p-10 flex items-start gap-6 bg-white min-h-screen">
       {/* Фильтры (левая колонка) */}
@@ -116,52 +132,73 @@ export default function Statistics() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-4 h-[600px] overflow-y-auto mb-4 pr-2">
-              {lids.map((item) => (
-                <div
-                  key={item.id}
-                  className={`border h-[320px] border-[#CDE2FF] rounded-[8px] bg-[#F6F7FA] p-5 relative row-span-2"}`}
-                >
-                  <p className="text-[#737373] text-sm font-medium min-h-[40px]">
-                    {[item.name, item.last_name, item.middle_name]
-                      .filter(Boolean)
-                      .join(" ")}
-                  </p>
-                  <p className="text-[#222222] text-sm font-medium pt-2">
-                    {item.phone_number}
-                  </p>
-                  <p className="text-[#222222] text-sm font-medium pt-2">
-                    {format(new Date(item.createdAt), "dd/MM/yyyy")} {t("from")}{" "}
-                    {item.from_time} {t("to")} {item.to_time}
-                  </p>
+            <div className="grid grid-cols-3 gap-4 h-[500px] overflow-y-auto mb-4 pr-2">
+              {/* {lids.map((item) => ( */}
+              {/* <div className="grid grid-cols-3 gap-4 mb-4 pr-2 w-[600px]"> */}
+              {lids.map((item) => {
+                // Dynamic height based on content and isSupOpen
+                const boxHeight =
+                  isSupOpen === item.id ? "h-auto" : "h-[320px]";
+                const backgroundColor =
+                  isSupOpen === item.id ? "bg-[#E0F2FF]" : "bg-[#F6F7FA]"; // Background color changes when open
 
-                  <div className="absolute right-4 top-[34px]">
-                    <button
-                      onClick={() => openAndClose(item.id)}
-                      className="cursor-pointer w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-                    >
-                      <Trash2 color="#EE2E24" />
-                    </button>
-                  </div>
+                return (
+                  <div
+                    key={item.id}
+                    className={`border border-[#CDE2FF] rounded-[8px] ${backgroundColor} p-5 relative row-span-2 ${boxHeight}`}
+                  >
+                    <p className="text-[#737373] text-sm font-medium min-h-[40px]">
+                      {[item.full_name].filter(Boolean).join(" ")}
+                    </p>
+                    <p className="text-[#222222] text-sm font-medium pt-2">
+                      {item.phone_number}
+                    </p>
+                    <p className="text-[#222222] text-sm font-medium pt-2">
+                      {format(new Date(item.createdAt), "dd/MM/yyyy")}{" "}
+                      {t("from")} {item.from_time} {t("to")} {item.to_time}
+                    </p>
 
-                  <div>
-                    <p className="pt-[15px] text-[#737373] text-[13px] font-medium">
-                      {t("course_direction")}
-                    </p>
-                    <p className="text-[#222222] text-base font-medium">
-                      {item.course_name}
-                    </p>
-                    <p className="text-base text-[#737373] font-medium pt-[5px]">
-                      {t("comment")}
-                    </p>
-                    <p className="text-base text-[#737373] pt-[5px] line-clamp-4 overflow-hidden">
-                      {item.comment || "Нет комментариев"}
-                    </p>
+                    <div className="absolute right-2 top-[5px]">
+                      <button
+                        onClick={() =>
+                          setIsSupOpen(isSupOpen === item.id ? null : item.id)
+                        }
+                        className="cursor-pointer w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-50 mb-1"
+                      >
+                        {isSupOpen === item.id ? (
+                          <ChevronUp size={22} className="mt-1 ml-2" />
+                        ) : (
+                          <ChevronDown size={22} className="mt-1" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => openAndClose(item.id)}
+                        className="cursor-pointer w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
+                      >
+                        <Trash2 color="#EE2E24" />
+                      </button>
+                    </div>
+
+                    {isSupOpen === item.id && (
+                      <div>
+                        <p className="pt-[15px] text-[#737373] text-[13px] font-medium">
+                          {t("course_direction")}
+                        </p>
+                        <p className="text-[#222222] text-base font-medium">
+                          {item.course_name}
+                        </p>
+                        <p className="text-base text-[#737373] font-medium pt-[5px]">
+                          {t("comment")}
+                        </p>
+                        <p className="text-base text-[#737373] pt-[5px] line-clamp-4 overflow-hidden">
+                          {item.comment || "Нет комментариев"}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
-
             <div className="flex justify-center mt-4">
               <Pagination
                 current={currentPage}
@@ -178,6 +215,9 @@ export default function Statistics() {
                 }
               />
             </div>
+            <p className="text-[#3F73BC] font-medium text-[22px] mb-6 mt-8">
+              {t("number_visits")}: {visitNumber}
+            </p>
           </>
         )}
       </div>
