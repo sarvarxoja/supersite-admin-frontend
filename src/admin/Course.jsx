@@ -152,7 +152,8 @@ export default function Course() {
   async function fetchCatalogs() {
     try {
       let { data } = await axios.get("/courses/get/catalog");
-      setCatalogs(data.catalog);
+      console.log(data);
+      setCatalogs(data);
     } catch (error) {
       console.log(error);
     }
@@ -206,9 +207,9 @@ export default function Course() {
       return;
     }
 
-    console.log(values);
-
     formData.append("catalog", values.catalog);
+    formData.append("catalog_uzb", values.catalog_uzb);
+    formData.append("catalog_rus", values.catalog_ru);
 
     formData.append("course_title_uz", values.title.uzb);
     formData.append("course_title_ru", values.title.rus);
@@ -359,25 +360,58 @@ export default function Course() {
                   )}
                 </div>
               </Form.Item>
-              <div className="flex items-center gap-4">
-                <Form.Item
-                  className="!mb-0 flex-1"
-                  name="catalog"
-                  rules={[{ required: true, message: "" }]}
-                >
-                  <div>
-                    <input
-                      list="currency-options"
-                      name="catalog"
-                      className="w-full h-[35px] border border-[#D9D9D9] rounded-[8px] px-3 text-[#13265C] bg-white focus:outline-none focus:ring-2 focus:ring-[#3F73BC]"
-                      placeholder="курс"
-                      required
-                    />
-                    <datalist id="currency-options">
-                      <option value="" disabled hidden>
-                        Выберите курс
-                      </option>
-                      {catalogs.map((e, i) => (
+              <h2 className="mb-[-20px] text-xl">{t("courses")}</h2>
+              <div className="flex items-center gap-2">
+                <div>
+                  <Form.Item
+                    className="!mb-0 flex-1"
+                    name="catalog"
+                    rules={[{ required: true, message: "" }]}
+                  >
+                    <div>
+                      <input
+                        list="currency-options"
+                        name="catalog"
+                        className="w-full h-[35px] border border-[#D9D9D9] rounded-[8px] px-3 text-[#13265C] bg-white focus:outline-none focus:ring-2 focus:ring-[#3F73BC]"
+                        placeholder="Eng"
+                        required
+                      />
+                      <datalist id="currency-options">
+                        <option value="" disabled hidden>
+                          Выберите курс
+                        </option>
+                          {catalogs.catalog?.map((e, i) => (
+                          <option
+                            key={i}
+                            value={e}
+                            className="bg-black text-white"
+                          >
+                            {e}
+                          </option>
+                        ))}
+                      </datalist>
+                    </div>
+                  </Form.Item>
+                </div>
+                <div>
+                  <Form.Item
+                    className="!mb-0 flex-1"
+                    name="catalog_ru"
+                    rules={[{ required: true, message: "" }]}
+                  >
+                    <div className="mt-2 mb-2">
+                      <input
+                        list="catalog-rus-options"
+                        name="catalog_ru"
+                        className="w-full h-[35px] border border-[#D9D9D9] rounded-[8px] px-3 text-[#13265C] bg-white focus:outline-none focus:ring-2 focus:ring-[#3F73BC]"
+                        placeholder="Рус"
+                        required
+                      />
+                      <datalist id="catalog-rus-options">
+                        <option value="" disabled hidden>
+                          Выберите курс
+                        </option>
+                        {catalogs.catalog_rus?.map((e, i) => (
                         <option
                           key={i}
                           value={e}
@@ -386,9 +420,41 @@ export default function Course() {
                           {e}
                         </option>
                       ))}
-                    </datalist>
-                  </div>
-                </Form.Item>
+                      </datalist>
+                    </div>
+                  </Form.Item>
+                </div>
+                <div>
+                  <Form.Item
+                    className="!mb-0 flex-1"
+                    name="catalog_uzb"
+                    rules={[{ required: true, message: "" }]}
+                  >
+                    <div className="mt-2 mb-2">
+                      <input
+                        list="catalog-uzb-options"
+                        name="catalog_uzb"
+                        className="w-full h-[35px] border border-[#D9D9D9] rounded-[8px] px-3 text-[#13265C] bg-white focus:outline-none focus:ring-2 focus:ring-[#3F73BC]"
+                        placeholder="Uzb"
+                        required
+                      />
+                      <datalist id="catalog-uzb-options">
+                        <option value="" disabled hidden>
+                          Выберите курс
+                        </option>
+                        {catalogs.catalog_uzb?.map((e, i) => (
+                        <option
+                          key={i}
+                          value={e}
+                          className="bg-black text-white"
+                        >
+                          {e !== null ? e : ""}
+                        </option>
+                      ))}
+                      </datalist>
+                    </div>
+                  </Form.Item>
+                </div>
                 <Form.Item
                   className="!mb-0 w-[150px] "
                   name={["price", "eng"]}
@@ -763,7 +829,7 @@ export default function Course() {
                   className="text-lg font-medium py-[10px] px-10 bg-[#3F73BC] rounded-[8px] text-white cursor-pointer"
                   htmlType="submit"
                 >
-                   {t(`${setLoad === false ? "Loading..." : "save"}`)}
+                  {t(`${load === true ? "Loading..." : "save"}`)}
                 </button>
               </Form.Item>
             </Form>
@@ -814,38 +880,102 @@ export default function Course() {
                 {formatDateToUzbek(course.createdAt)}
               </p>
               <div className="flex items-center gap-4 mb-2">
-                {/* Valyuta tanlash */}
-                <Form.Item
-                  className="!mb-0 flex-1"
-                  name="catalog"
-                  rules={[{ required: true, message: "" }]}
-                >
-                  <div>
-                    <input
-                      list="currency-options"
-                      name="catalog"
-                      className="w-full h-[35px] border border-[#D9D9D9] rounded-[8px] px-3 text-[#13265C] bg-white focus:outline-none focus:ring-2 focus:ring-[#3F73BC]"
-                      placeholder="курс"
-                      value={course.catalog}
-                      onChange={(e) =>
-                        setCourse({ ...course, catalog: e.target.value })
-                      }
-                      required
-                    />
-                    <datalist id="currency-options">
-                      {catalogs.map((e, i) => (
-                        <option
-                          key={i}
-                          value={e}
-                          className="bg-black text-white"
-                        >
-                          {e}
-                        </option>
-                      ))}
-                    </datalist>
-                  </div>
-                </Form.Item>
-
+                <div>
+                  <Form.Item
+                    className="!mb-0 flex-1"
+                    name="catalog"
+                    rules={[{ required: true, message: "" }]}
+                  >
+                    <div>
+                      <input
+                        list="currency-options"
+                        name="catalog"
+                        className="w-full h-[35px] border border-[#D9D9D9] rounded-[8px] px-3 text-[#13265C] bg-white focus:outline-none focus:ring-2 focus:ring-[#3F73BC]"
+                        placeholder="Eng"
+                        value={course.catalog}
+                        onChange={(e) =>
+                          setCourse({ ...course, catalog: e.target.value })
+                        }
+                        required
+                      />
+                      <datalist id="currency-options">
+                        {catalogs.catalog?.map((e, i) => (
+                          <option
+                            key={i}
+                            value={e}
+                            className="bg-black text-white"
+                          >
+                            {e}
+                          </option>
+                        ))}
+                      </datalist>
+                    </div>
+                  </Form.Item>
+                </div>
+                <div>
+                  <Form.Item
+                    className="!mb-0 flex-1"
+                    name="catalog_rus"
+                    rules={[{ required: true, message: "" }]}
+                  >
+                    <div>
+                      <input
+                        list="currency-options_rus"
+                        name="catalog_rus"
+                        className="w-full h-[35px] border border-[#D9D9D9] rounded-[8px] px-3 text-[#13265C] bg-white focus:outline-none focus:ring-2 focus:ring-[#3F73BC]"
+                        placeholder="Рус"
+                        value={course.catalog_rus}
+                        onChange={(e) =>
+                          setCourse({ ...course, catalog_rus: e.target.value })
+                        }
+                        required
+                      />
+                      <datalist id="currency-options_rus">
+                        {catalogs.catalog_rus?.map((e, i) => (
+                          <option
+                            key={i}
+                            value={e}
+                            className="bg-black text-white"
+                          >
+                            {e}
+                          </option>
+                        ))}
+                      </datalist>
+                    </div>
+                  </Form.Item>
+                </div>
+                <div>
+                  <Form.Item
+                    className="!mb-0 flex-1"
+                    name="catalog_uzb"
+                    rules={[{ required: true, message: "" }]}
+                  >
+                    <div>
+                      <input
+                        list="currency-options_eng"
+                        name="catalog_uzb"
+                        className="w-full h-[35px] border border-[#D9D9D9] rounded-[8px] px-3 text-[#13265C] bg-white focus:outline-none focus:ring-2 focus:ring-[#3F73BC]"
+                        value={course.catalog_uzb}
+                        placeholder="Uzb"
+                        onChange={(e) =>
+                          setCourse({ ...course, catalog_uzb: e.target.value })
+                        }
+                        required
+                      />
+                      <datalist id="currency-options_eng">
+                        {catalogs.catalog_uzb?.map((e, i) => (
+                          <option
+                            key={i}
+                            value={e}
+                            className="bg-black text-white"
+                          >
+                            {e}
+                          </option>
+                        ))}
+                      </datalist>
+                    </div>
+                  </Form.Item>
+                </div>
                 <Form.Item className="!mb-0 w-[150px]">
                   <StyledInput
                     size="large"
