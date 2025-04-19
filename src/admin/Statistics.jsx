@@ -92,9 +92,9 @@ export default function Statistics() {
   }, []);
 
   return (
-    <div className="p-10 flex items-start gap-6 bg-white min-h-screen">
+    <div className="p-4 md:p-10 flex flex-col md:flex-row gap-6 bg-white min-h-screen">
       {/* Фильтры (левая колонка) */}
-      <div className="flex flex-col gap-10 max-w-[170px] w-full sticky top-10">
+      <div className="flex flex-row md:flex-col gap-4 md:gap-10 md:max-w-[170px] w-full md:sticky md:top-10">
         {dailyRequests.map((item) => (
           <div
             key={item.id}
@@ -102,7 +102,7 @@ export default function Statistics() {
               setFilterName(item.filter);
               setCurrentPage(1);
             }}
-            className={`text-xl font-medium cursor-pointer transition-all duration-300 ${
+            className={`text-base md:text-xl font-medium cursor-pointer transition-all duration-300 ${
               filterName === item.filter
                 ? "underline text-[#3F73BC]"
                 : "text-[#737373] hover:text-[#3F73BC]"
@@ -112,16 +112,16 @@ export default function Statistics() {
           </div>
         ))}
       </div>
-
+  
       {/* Вертикальная разделительная линия */}
-      <div className="w-px h-[calc(100vh-80px)] bg-[#CDE2FF] rounded-[6px] sticky top-10"></div>
-
+      <div className="hidden md:block w-px h-[calc(100vh-80px)] bg-[#CDE2FF] rounded-[6px] sticky top-10"></div>
+  
       {/* Основное содержимое */}
       <div className="flex-1 flex flex-col">
-        <p className="text-[#3F73BC] font-medium text-[52px] mb-6">
+        <p className="text-[#3F73BC] font-medium text-3xl md:text-[52px] mb-6">
           {totalLids}
         </p>
-
+  
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Spin size="large" />
@@ -132,20 +132,16 @@ export default function Statistics() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-4 h-[500px] overflow-y-auto mb-4 pr-2">
-              {/* {lids.map((item) => ( */}
-              {/* <div className="grid grid-cols-3 gap-4 mb-4 pr-2 w-[600px]"> */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto mb-4 pr-2">
               {lids.map((item) => {
-                // Dynamic height based on content and isSupOpen
-                const boxHeight =
-                  isSupOpen === item.id ? "h-auto" : "h-[320px]";
+                const boxHeight = isSupOpen === item.id ? "h-auto" : "h-[320px]";
                 const backgroundColor =
-                  isSupOpen === item.id ? "bg-[#E0F2FF]" : "bg-[#F6F7FA]"; // Background color changes when open
-
+                  isSupOpen === item.id ? "bg-[#E0F2FF]" : "bg-[#F6F7FA]";
+  
                 return (
                   <div
                     key={item.id}
-                    className={`border border-[#CDE2FF] rounded-[8px] ${backgroundColor} p-5 relative row-span-2 ${boxHeight}`}
+                    className={`border border-[#CDE2FF] rounded-[8px] ${backgroundColor} p-5 relative ${boxHeight}`}
                   >
                     <p className="text-[#737373] text-sm font-medium min-h-[40px]">
                       {[item.full_name].filter(Boolean).join(" ")}
@@ -154,16 +150,16 @@ export default function Statistics() {
                       {item.phone_number}
                     </p>
                     <p className="text-[#222222] text-sm font-medium pt-2">
-                      {format(new Date(item.createdAt), "dd/MM/yyyy")}{" "}
-                      {t("from")} {item.from_time} {t("to")} {item.to_time}
+                      {format(new Date(item.createdAt), "dd/MM/yyyy")} {t("from")}{" "}
+                      {item.from_time} {t("to")} {item.to_time}
                     </p>
-
-                    <div className="absolute right-2 top-[5px]">
+  
+                    <div className="absolute right-2 top-[5px] flex flex-col items-end gap-1">
                       <button
                         onClick={() =>
                           setIsSupOpen(isSupOpen === item.id ? null : item.id)
                         }
-                        className="cursor-pointer w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-50 mb-1"
+                        className="cursor-pointer w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
                       >
                         {isSupOpen === item.id ? (
                           <ChevronUp size={22} className="mt-1 ml-2" />
@@ -178,7 +174,7 @@ export default function Statistics() {
                         <Trash2 color="#EE2E24" />
                       </button>
                     </div>
-
+  
                     {isSupOpen === item.id && (
                       <div>
                         <p className="pt-[15px] text-[#737373] text-[13px] font-medium">
@@ -215,7 +211,7 @@ export default function Statistics() {
                 }
               />
             </div>
-            <p className="text-[#3F73BC] font-medium text-[22px] mb-6 mt-8">
+            <p className="text-[#3F73BC] font-medium text-lg md:text-[22px] mb-6 mt-8">
               {t("number_visits")}: {visitNumber}
             </p>
           </>
@@ -228,4 +224,5 @@ export default function Statistics() {
       />
     </div>
   );
+  
 }

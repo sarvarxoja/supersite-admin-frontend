@@ -181,15 +181,18 @@ export default function FaqSection() {
       <div className="mt-10">
         <div className="flex flex-col gap-2 mb-5">
           {data.map((item) => (
-            <div key={item.id} className="flex items-center gap-5">
-              <div className="border border-[#D9D9D9] rounded-[8px] px-[25px] py-[12px] w-full">
+            <div
+              key={item.id}
+              className="flex flex-col md:flex-row md:items-center gap-3 md:gap-5"
+            >
+              <div className="border border-[#D9D9D9] rounded-[8px] px-[15px] py-[12px] w-full">
                 <div
                   onClick={() => setDataId(dataId === item.id ? null : item.id)}
                   className="flex items-center justify-between cursor-pointer"
                 >
-                  <p className="text-[#222222] text-xl font-medium flex items-center">
+                  <p className="text-[#222222] text-base md:text-xl font-medium flex items-center">
                     <Dot />
-                    {" " + lang === "en"
+                    {"" + lang === "en"
                       ? item.question_eng
                       : lang === "ru"
                       ? item.question_ru
@@ -198,7 +201,7 @@ export default function FaqSection() {
                   {dataId === item.id ? <ChevronUp /> : <ChevronDown />}
                 </div>
                 {dataId === item.id && (
-                  <p className="pt-4 text-[#737373]">
+                  <p className="pt-4 text-[#737373] text-sm md:text-base">
                     {lang === "en"
                       ? item.answer_eng
                       : lang === "ru"
@@ -207,21 +210,26 @@ export default function FaqSection() {
                   </p>
                 )}
               </div>
-              <buttom
-                onClick={() => openAndClose(item.id)}
-                className="cursor-pointer w-[84px] h-[54px] border border-[#D9D9D9] flex items-center justify-center rounded-[8px]"
-              >
-                <Trash2 color="red" />
-              </buttom>
-              <button
-                onClick={() => handleUpdateOpenModal(item)}
-                className="cursor-pointer w-[84px] h-[54px] border border-[#D9D9D9] flex items-center justify-center rounded-[8px]"
-              >
-                <Pencil color="green" />
-              </button>
+  
+              <div className="flex gap-2 md:gap-3">
+                <button
+                  onClick={() => openAndClose(item.id)}
+                  className="cursor-pointer w-[54px] md:w-[84px] h-[54px] border border-[#D9D9D9] flex items-center justify-center rounded-[8px]"
+                >
+                  <Trash2 color="red" />
+                </button>
+                <button
+                  onClick={() => handleUpdateOpenModal(item)}
+                  className="cursor-pointer w-[54px] md:w-[84px] h-[54px] border border-[#D9D9D9] flex items-center justify-center rounded-[8px]"
+                >
+                  <Pencil color="green" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
+  
+        {/* Form */}
         <Form
           form={form}
           name="news"
@@ -230,7 +238,7 @@ export default function FaqSection() {
           autoComplete="off"
           className="flex flex-col gap-5"
         >
-          {/* Ryc */}
+          {/* Question Fields */}
           <Form.Item
             className="!mb-0"
             name={["title", "ryc"]}
@@ -247,8 +255,7 @@ export default function FaqSection() {
               }
             />
           </Form.Item>
-
-          {/* Uzb */}
+  
           <Form.Item
             className="!mb-0"
             name={["title", "uzb"]}
@@ -264,8 +271,7 @@ export default function FaqSection() {
               }
             />
           </Form.Item>
-
-          {/* Eng */}
+  
           <Form.Item
             className="!mb-0"
             name={["title", "eng"]}
@@ -281,8 +287,8 @@ export default function FaqSection() {
               }
             />
           </Form.Item>
-
-          {/* Ryc */}
+  
+          {/* Answer Fields */}
           <Form.Item
             name={["description", "ryc"]}
             label={<span>{t("answer")}</span>}
@@ -298,7 +304,7 @@ export default function FaqSection() {
               }
             />
           </Form.Item>
-
+  
           <Form.Item
             name={["description", "uzb"]}
             rules={[{ required: true, message: "" }]}
@@ -313,6 +319,7 @@ export default function FaqSection() {
               }
             />
           </Form.Item>
+  
           <Form.Item
             name={["description", "eng"]}
             rules={[{ required: true, message: "" }]}
@@ -327,36 +334,38 @@ export default function FaqSection() {
               }
             />
           </Form.Item>
-
+  
           {/* Submit Button */}
-          <Form.Item className="flex justify-end">
+          <Form.Item className="flex flex-col sm:flex-row justify-end gap-3">
             <button
-              className="mr-5 text-lg font-medium py-[10px] px-10 border border-[#D9D9D9] rounded-[8px] cursor-pointer"
+              className="text-lg font-medium py-[10px] px-6 border border-[#D9D9D9] rounded-[8px] cursor-pointer"
               onClick={() => cancelForm()}
             >
               {t("cancel")}
-              {/* Oтменить */}
             </button>
             <button
-              className="text-lg font-medium py-[10px] px-10 bg-[#3F73BC] rounded-[8px] text-white cursor-pointer"
+              className="text-lg font-medium py-[10px] px-6 bg-[#3F73BC] rounded-[8px] text-white cursor-pointer ml-4"
               htmlType="submit"
             >
               {t(`${setLoad === false ? "Loading..." : "save"}`)}
             </button>
           </Form.Item>
         </Form>
+  
+        {/* Modals */}
+        <DeleteConfirmationModal
+          isOpen={isOpen}
+          handleDelete={handleDelete}
+          closeModal={openAndClose}
+        />
+        <UpdateModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          item={selectedUpdateItem}
+          onUpdate={handleUpdate}
+        />
       </div>
-      <DeleteConfirmationModal
-        isOpen={isOpen}
-        handleDelete={handleDelete}
-        closeModal={openAndClose}
-      />
-      <UpdateModal
-        isOpen={isUpdateModalOpen}
-        onClose={() => setIsUpdateModalOpen(false)}
-        item={selectedUpdateItem}
-        onUpdate={handleUpdate}
-      />
     </div>
   );
+  
 }

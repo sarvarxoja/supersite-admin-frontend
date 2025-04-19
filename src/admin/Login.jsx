@@ -43,44 +43,46 @@ export default function Login({ access }) {
 
   return (
     <div className="flex h-screen">
-      <div className="w-1/2 bg-[#A11E29] flex items-center justify-center">
-        <img src={Img} alt="" />
-      </div>
-      <div className="w-1/2 flex items-center justify-center">
-        <Form
-          name="login"
-          className="w-full max-w-[400px]"
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-          autoComplete="off"
-          layout="vertical"
-        >
-          <Form.Item
-            label="Username"
-            name="login"
-            rules={[{ required: true, message: "Please input your username!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <div className="mt-4">
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[
-                { required: true, message: "Please input your password!" },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-          </div>
-          <span className="text-red-600 mt-4 block">{error}</span>
-          <Form.Item label={null}>
-            <Button type="primary" htmlType="submit" className="mt-4">
-              {load === false ? "Submit" : "Loading..."}
-            </Button>
-          </Form.Item>
-        </Form>
-      </div>
+    {/* LEFT SIDE: Img only shows on screens smaller than 771px */}
+    <div className="hidden sm:flex w-1/2 bg-[#A11E29] items-center justify-center">
+      <img src={Img} alt="" />
     </div>
+    
+    {/* RIGHT SIDE: Form - always visible */}
+    <div className="w-full sm:w-1/2 flex items-center justify-center px-4">
+      <Form
+        name="login"
+        className="w-full max-w-[400px]"
+        initialValues={{ remember: true }}
+        onFinish={onFinish}
+        autoComplete="off"
+        layout="vertical"
+      >
+        <Form.Item
+          label="Username"
+          name="login"
+          rules={[{ required: true, message: "Please input your username!" }]}>
+          <Input />
+        </Form.Item>
+        
+        <div className="mt-4">
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[{ required: true, message: "Please input your password!" }]}>
+            <Input.Password />
+          </Form.Item>
+        </div>
+        
+        <span className="text-red-600 mt-4 block">{error}</span>
+        
+        <Form.Item label={null}>
+          <Button type="primary" htmlType="submit" className="mt-4 w-full">
+            {load === false ? "Submit" : "Loading..."}
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
+  </div>
   );
 }
